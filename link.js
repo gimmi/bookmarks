@@ -29,6 +29,10 @@ export default function Link({ link, level = 0 }) {
             el = h("img", { style, src: link.favicon })
         } else if (_.isString(link.favicon)) {
             el = h("i", { class: link.favicon })
+        } else if (links.length) {
+            el = h("i", { class: "nf nf-oct-file_directory" })
+        } else {
+            el = h("i", { class: "nf nf-oct-dot" })
         }
 
         return el
