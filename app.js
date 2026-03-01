@@ -11,6 +11,7 @@ export default function App() {
     const [context, setContext] = usePersistentState("context", "");
     const [flexWrap, setFlexWrap] = usePersistentState("flexWrap", "nowrap");
     const dialogRef = useRef(null);
+    const searchInputRef = useFocusRef(null);
 
     // TODO replace with https://github.com/farzher/fuzzysort
     const searchTerms = searchText
@@ -43,7 +44,7 @@ export default function App() {
     return [
         h("fieldset", { role: "search", style: "margin: 0; padding: var(--pico-spacing);" },
             h(ContextSelector, { contexts, context, setContext }),
-            h("input", { type: "search", placeholder: "Search", onInput: e => setSearchText(e.target.value), autofocus: true }),
+            h("input", { ref: searchInputRef, type: "search", placeholder: "Search", onInput: e => setSearchText(e.target.value) }),
             h("input", { type: "button", value: "⚙", onClick: onOpenSettings, tabindex: "-1" })
         ),
         h("div", { style: style },
@@ -96,4 +97,37 @@ function usePersistentState(key, def) {
     }, [state]);
 
     return [state, cacheAndSetState];
+}
+
+function useFocusRef() {
+    const ref = useRef(null);
+    const focusRef = useCallback(() => {
+        if (isElementVisible(ref.current)) {
+            console.log('Focus!')
+            ref.current.focus();
+        }
+    }, [])
+    useEffect(() => {
+        focusRef()
+        window.addEventListener("focus", focusRef);
+        return () => window.removeEventListener("focus", focusRef);
+    }, [])
+
+    return ref;
+}
+
+function isElementVisible(el) {
+    if (!(el instanceof HTMLElement)) {
+        return false
+    }
+
+    const rect = el.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0) {
+        return false
+    }
+
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    const elementAtPoint = document.elementFromPoint(centerX, centerY);
+    return el === elementAtPoint || el.contains(elementAtPoint);
 }
